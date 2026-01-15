@@ -1,0 +1,8 @@
+# Ignore dependency folders
+node_modules/
+
+# Ignore sensitive environment variables
+.env
+
+# Ignore uploaded files
+uploads/

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure Checkout | Flipkart Health+</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light py-5">
+    <div class="container" style="max-width: 450px;">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h5 class="mb-0 fw-bold">Secure Payment Gateway</h5>
+            </div>
+            <div class="card-body p-4">
+                <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.75rem;">Bill Summary</h6>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Order Total</span>
+                    <span>₹<%= (total - (total * 0.12) - 40).toFixed(2) %></span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>GST (12%)</span>
+                    <span>₹<%= (total * 0.12).toFixed(2) %></span>
+                </div>
+                <div class="d-flex justify-content-between mb-2 text-success">
+                    <span>Delivery Charges</span>
+                    <span>₹40.00</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between h5 text-primary fw-bold">
+                    <span>Total Payable</span>
+                    <span>₹<%= total %></span>
+                </div>
+                
+                <form action="/verify-payment" method="POST" class="mt-4">
+                    <label class="form-label fw-bold small text-muted">CHOOSE PAYMENT METHOD</label>
+                    <select name="paymentMethod" class="form-select mb-4 shadow-sm" required>
+                        <option value="Google Pay (UPI)">Google Pay / UPI</option>
+                        <option value="Paytm Wallet">Paytm Wallet</option>
+                        <option value="PhonePe">PhonePe</option>
+                        <option value="Credit/Debit Card">Credit / Debit Card</option>
+                    </select>
+                    <button class="btn btn-success w-100 py-2 fw-bold shadow">
+                        Confirm & Pay ₹<%= total %>
+                    </button>
+                </form>
+            </div>
+            <div class="card-footer bg-white text-center py-3">
+                <small class="text-muted">🔒 PCI-DSS Certified Secure Transaction</small>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <a href="/" class="text-decoration-none small text-secondary">← Cancel and Return to Cart</a>
+        </div>
+    </div>
+</body>
+</html>

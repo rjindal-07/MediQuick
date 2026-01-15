@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flipkart Health+ | Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .valid { color: #198754; font-weight: bold; }
+        .invalid { color: #dc3545; font-size: 0.85rem; }
+        .card-medicine { transition: transform 0.2s; border: none; }
+        .card-medicine:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">Flipkart Health+</a>
+        <% if (user) { %>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-warning fw-bold btn-sm" data-bs-toggle="modal" data-bs-target="#cartModal">
+                    🛒 Cart (<%= session.cart ? session.cart.length : 0 %>)
+                </button>
+                <a href="/track" class="btn btn-outline-light btn-sm ms-2">My Orders</a>
+                <a href="/logout" class="btn btn-danger btn-sm ms-2">Logout</a>
+            </div>
+        <% } %>
+    </div>
+</nav>
+
+<div class="container">
+    <% if (!user) { %>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-5">
+                <div class="card p-4 shadow-sm border-0">
+                    <h3 class="mb-3">Sign Up</h3>
+                    <form action="/signup" method="POST">
+                        <input type="text" name="username" class="form-control mb-2" placeholder="Username" required>
+                        <input type="password" id="pw" name="password" class="form-control mb-2" placeholder="Create Strong Password" required>
+                        <div id="m-len" class="invalid">✖ 8+ Characters</div>
+                        <div id="m-spec" class="invalid">✖ At least 1 Special Char (@$!%)</div>
+                        <button id="sbtn" class="btn btn-primary w-100 mt-3 fw-bold" disabled>Create Account</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card p-4 shadow-sm border-0">
+                    <h3 class="mb-3">Login</h3>
+                    <form action="/login" method="POST">
+                        <input type="text" name="username" class="form-control mb-2" placeholder="Username" required>
+                        <input type="password" name="password" class="form-control mb-2" placeholder="Password" required>
+                        <select name="role" class="form-select mb-3">
+                            <option value="user">Customer</option>
+                            <option value="chemist">Chemist</option>
+                        </select>
+                        <button class="btn btn-success w-100 fw-bold">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <% } else { %>
+        <div class="row">
+            <% chemists.forEach(chemist => { %>
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between">
+                            <span><%= chemist.name %></span>
+                            <small class="badge bg-secondary"><%= chemist.area %></small>
+                        </div>
+                        <div class="card-body">
+                            <% chemist.inventory.forEach(item => { %>
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-3">
+                                    <div>
+                                        <h6 class="mb-0"><%= item.name %></h6>
+                                        <span class="text-success fw-bold">₹<%= item.price %></span>
+                                        <small class="d-block text-muted">
+                                            <%= item.requiresRx ? '🔴 Prescription Required' : '🟢 OTC (Over the Counter)' %>
+                                        </small>
+                                    </div>
+                                    <form action="/add-to-cart" method="POST">
+                                        <input type="hidden" name="medicineName" value="<%= item.name %>">
+                                        <input type="hidden" name="price" value="<%= item.price %>">
+                                        <input type="hidden" name="chemistId" value="<%= chemist.id %>">
+                                        <button class="btn btn-sm btn-primary">+ Add</button>
+                                    </form>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+</div>
+
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title fw-bold">🛒 Your Shopping Cart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <% if (session.cart && session.cart.length > 0) { %>
+                    <% session.cart.forEach(item => { %>
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded shadow-sm">
+                            <div>
+                                <strong class="d-block"><%= item.medicineName %></strong>
+                                <small class="text-muted">₹<%= item.price %> per unit</small>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <form action="/update-cart" method="POST" class="m-0">
+                                    <input type="hidden" name="medicineName" value="<%= item.medicineName %>">
+                                    <button name="action" value="minus" class="btn btn-sm btn-outline-secondary">-</button>
+                                </form>
+                                <span class="fw-bold px-2"><%= item.qty %></span>
+                                <form action="/update-cart" method="POST" class="m-0">
+                                    <input type="hidden" name="medicineName" value="<%= item.medicineName %>">
+                                    <button name="action" value="plus" class="btn btn-sm btn-outline-secondary">+</button>
+                                </form>
+                                <form action="/remove-item" method="POST" class="ms-2">
+                                    <input type="hidden" name="medicineName" value="<%= item.medicineName %>">
+                                    <button class="btn btn-sm btn-danger">🗑️</button>
+                                </form>
+                            </div>
+                        </div>
+                    <% }) %>
+                    <form action="/initiate-checkout" method="POST">
+                        <button class="btn btn-success w-100 mt-3 py-2 fw-bold">Proceed to Payment</button>
+                    </form>
+                <% } else { %>
+                    <div class="text-center py-4">
+                        <p class="text-muted">Your cart is empty!</p>
+                        <button class="btn btn-sm btn-primary" data-bs-dismiss="modal">Browse Medicines</button>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Security logic for 8+ char and Special Character
+    const pw = document.getElementById('pw');
+    const sbtn = document.getElementById('sbtn');
+    const mLen = document.getElementById('m-len');
+    const mSpec = document.getElementById('m-spec');
+
+    pw.addEventListener('input', () => {
+        const val = pw.value;
+        const hasLen = val.length >= 8;
+        const hasSpec = /[@$!%*?&]/.test(val);
+
+        mLen.className = hasLen ? 'valid' : 'invalid';
+        mLen.innerText = hasLen ? '✔ 8+ Characters' : '✖ 8+ Characters';
+
+        mSpec.className = hasSpec ? 'valid' : 'invalid';
+        mSpec.innerText = hasSpec ? '✔ Special Char (@$!%)' : '✖ At least 1 Special Char (@$!%)';
+
+        sbtn.disabled = !(hasLen && hasSpec);
+    });
+</script>
+
+</body>
+</html>
