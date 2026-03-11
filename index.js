@@ -10,7 +10,7 @@ const pool = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: process.env.DB_PASSWORD, 
-    database: 'flipkart_health',
+    database: 'mediquick_health',
     waitForConnections: true,
     connectionLimit: 10
 }).promise();
@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(session({
-    secret: 'flipkart-mysql-secret',
+    secret: 'mediquick-mysql-secret',
     resave: false,
     saveUninitialized: true
 }));
